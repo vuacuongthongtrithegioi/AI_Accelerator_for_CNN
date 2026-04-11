@@ -32,7 +32,6 @@ module output_buffer #(parameter DW=48)(
 
     always @(*) begin
         data_out = 0;
-
         if (out_cnt == 0) data_out = rC00;
         else if (out_cnt == 1) data_out = rC01;
         else if (out_cnt == 2) data_out = rC02;
