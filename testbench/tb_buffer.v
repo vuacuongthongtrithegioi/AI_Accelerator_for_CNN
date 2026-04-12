@@ -1,14 +1,14 @@
 `timescale 1ns/1ps
 
 module tb ();
-    wire clk, reset, start;
+    reg clk, reset, start;
 
-    wire [215:0] IFM;
-    wire [215:0] WGT;
+    reg [215:0] IFM;
+    reg [215:0] WGT;
 
-    reg [23:0] a1,a2,a3;
-    reg [23:0] b1,b2,b3;
-    reg done;
+    wire [23:0] a1,a2,a3;
+    wire [23:0] b1,b2,b3;
+    wire done;
 
     systolic_input_top dut (
         .clk(clk),
