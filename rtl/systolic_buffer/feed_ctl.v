@@ -41,7 +41,7 @@ module systolic_input_buffer_ctl (
                 FEED: begin
                     load <= 0;
 
-                    if (cycle == 3'd7)
+                    if (cycle == 3'd6)
                         state <= DONE;
                     else
                         cycle <= cycle + 1;

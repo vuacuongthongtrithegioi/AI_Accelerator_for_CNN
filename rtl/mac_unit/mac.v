@@ -10,9 +10,9 @@ module matrix_multiplication(
     input wire clk, reset, clear;
     input wire [23:0] a1, a2, a3;
     input wire [23:0] b1, b2, b3;
-    output wire [23:0] c1, c2, c3;
-    output wire [23:0] c4, c5, c6;
-    output wire [23:0] c7, c8, c9;
+    output wire [47:0] c1, c2, c3;
+    output wire [47:0] c4, c5, c6;
+    output wire [47:0] c7, c8, c9;
 
     wire [23:0] a12, a23, a45, a56, a78, a89;
     wire [23:0] b14, b25, b36, b47, b58, b69;
