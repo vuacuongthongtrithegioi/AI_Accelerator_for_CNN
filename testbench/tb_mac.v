@@ -38,4 +38,9 @@ module tb ();
         #1000;
         $finish;
     end
+
+    initial begin
+        $dumpfile("dump.vcd"); 
+        $dumpvars;
+    end
 endmodule

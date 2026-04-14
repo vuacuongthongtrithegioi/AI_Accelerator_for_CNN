@@ -4,9 +4,9 @@ module mac_top #(parameter DW=24)(
     input [DW-1:0] a1,a2,a3,
     input [DW-1:0] b1,b2,b3,
 
-    output [DW-1:0] c1,c2,c3,
-    output [DW-1:0] c4,c5,c6,
-    output [DW-1:0] c7,c8,c9,
+    output [47:0] c1,c2,c3,
+    output [47:0] c4,c5,c6,
+    output [47:0] c7,c8,c9,
 
     output done
 );
