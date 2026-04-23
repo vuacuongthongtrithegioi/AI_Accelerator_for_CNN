@@ -520,12 +520,15 @@ module ReLU (
 
     output signed [47:0] out_0, out_1, out_2,
     output signed [47:0] out_3, out_4, out_5,
-    output signed [47:0] out_6, out_7, out_8
+    output signed [47:0] out_6, out_7, out_8,
+
+    output reg done;
 );
 
     reg signed [47:0] out_0_reg, out_1_reg, out_2_reg;
     reg signed [47:0] out_3_reg, out_4_reg, out_5_reg;
     reg signed [47:0] out_6_reg, out_7_reg, out_8_reg;
+    reg relu_en_d;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -545,6 +548,16 @@ module ReLU (
             out_6_reg <= (in_6 < 0) ? 0 : in_6;
             out_7_reg <= (in_7 < 0) ? 0 : in_7;
             out_8_reg <= (in_8 < 0) ? 0 : in_8;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (reset) begin
+            relu_en_d <= 0;
+            done <= 0;
+        end else begin
+            relu_en_d <= relu_en;
+            done <= relu_en_d; 
         end
     end
 
@@ -635,10 +648,13 @@ module output_buffer_top (
 
     output signed [47:0] c1_out, c2_out, c3_out,
     output signed [47:0] c4_out, c5_out, c6_out,
-    output signed [47:0] c7_out, c8_out, c9_out
+    output signed [47:0] c7_out, c8_out, c9_out,
+
+    output reg done;
 );
 
     wire load;
+    reg load_d;
 
     output_buffer_ctl out_ctl (
         .clk(clk), 
@@ -657,6 +673,15 @@ module output_buffer_top (
         .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out)
     );
 
+    always @(posedge clk) begin
+        if (reset) begin
+            load_d <= 0;
+            done <= 0;
+        end else begin
+            load_d <= load;
+            done <= load_d;   // báo sau khi load hoàn tất
+        end
+    end 
 endmodule
 
 module NPU (
@@ -731,11 +756,30 @@ module NPU (
         .clk(clk),
         .reset(reset),
         .relu_en(q_done),
+        .done(relu_done),
         .in_0(Q_OUT_1), .in_1(Q_OUT_2), .in_2(Q_OUT_3),
         .in_3(Q_OUT_4), .in_4(Q_OUT_5), .in_5(Q_OUT_6),
         .in_6(Q_OUT_7), .in_7(Q_OUT_8), .in_8(Q_OUT_9),
         .out_0(RELU_OUT_1), .out_1(RELU_OUT_2), .out_2(RELU_OUT_3),
         .out_3(RELU_OUT_4), .out_4(RELU_OUT_5), .out_5(RELU_OUT_6),
         .out_6(RELU_OUT_7), .out_7(RELU_OUT_8), .out_8(RELU_OUT_9)
+    );
+
+    //variable for output buffer
+    wire signed [47:0] OFM_BUF_1, OFM_BUF_2, OFM_BUF_3;
+    wire signed [47:0] OFM_BUF_4, OFM_BUF_5, OFM_BUF_6;
+    wire signed [47:0] OFM_BUF_7, OFM_BUF_8, OFM_BUF_9;
+    wire done_output_buffer;
+
+    output_buffer_top out_buffer (
+        .clk(clk),
+        .reset(reset),
+        .done_systolic(relu_done),
+        .c1_in(RELU_OUT_1), .c2_in(RELU_OUT_2), .c3_in(RELU_OUT_3),
+        .c4_in(RELU_OUT_4), .c5_in(RELU_OUT_5), .c6_in(RELU_OUT_6),
+        .c7_in(RELU_OUT_7), .c8_in(RELU_OUT_8), .c9_in(RELU_OUT_9),
+        .c1_out(OFM_BUF_1), .c2_out(OFM_BUF_2), .c3_out(OFM_BUF_3),
+        .c4_out(OFM_BUF_4), .c5_out(OFM_BUF_5), .c6_out(OFM_BUF_6),
+        .c7_out(OFM_BUF_7), .c8_out(OFM_BUF_8), .c9_out(OFM_BUF_9)
     );
 endmodule
