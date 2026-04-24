@@ -5,9 +5,9 @@ module pe(
     out_c
 );
     input wire clk, reset, clear;
-    input wire [23:0] in_a, in_b;
-    output reg [23:0] out_a, out_b;
-    output reg [47:0] out_c;
+    input wire signed [23:0] in_a, in_b;
+    output reg signed [23:0] out_a, out_b;
+    output reg signed [47:0] out_c;
 
     always @(posedge clk) begin
         if (reset || clear) begin
