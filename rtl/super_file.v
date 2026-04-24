@@ -522,7 +522,7 @@ module ReLU (
     output signed [47:0] out_3, out_4, out_5,
     output signed [47:0] out_6, out_7, out_8,
 
-    output reg done;
+    output reg done
 );
 
     reg signed [47:0] out_0_reg, out_1_reg, out_2_reg;
@@ -650,7 +650,7 @@ module output_buffer_top (
     output signed [47:0] c4_out, c5_out, c6_out,
     output signed [47:0] c7_out, c8_out, c9_out,
 
-    output reg done;
+    output reg done
 );
 
     wire load;
@@ -679,7 +679,7 @@ module output_buffer_top (
             done <= 0;
         end else begin
             load_d <= load;
-            done <= load_d;   // báo sau khi load hoàn tất
+            done <= load_d;   
         end
     end 
 endmodule

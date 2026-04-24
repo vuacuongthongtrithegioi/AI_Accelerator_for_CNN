@@ -8,7 +8,9 @@ module output_buffer_top (
 
     output [47:0] c1_out, c2_out, c3_out,
     output [47:0] c4_out, c5_out, c6_out,
-    output [47:0] c7_out, c8_out, c9_out
+    output [47:0] c7_out, c8_out, c9_out,
+    
+    output done;
 );
 
     wire load;
@@ -29,5 +31,15 @@ module output_buffer_top (
         .c4_out(c4_out), .c5_out(c5_out), .c6_out(c6_out),
         .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out)
     );
+
+    reg done_d;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            done_d <= 0;
+        else
+            done_d <= done_systolic;
+    end
+    assign done = done_d;
 
 endmodule

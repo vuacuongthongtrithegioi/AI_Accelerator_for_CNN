@@ -3,7 +3,7 @@ module NPU (clk, reset, start,
     c1_out, c2_out, c3_out, 
     c4_out, c5_out, c6_out, 
     c7_out, c8_out, c9_out, 
-    done_input_buffer, done_mac, done_q, done_relu);
+    done_input_buffer, done_mac, done_q, done_relu, done_ofm);
 
     input clk, reset, start;
     input [215:0] IFM;
@@ -12,7 +12,7 @@ module NPU (clk, reset, start,
     output signed [47:0] c1_out, c2_out, c3_out; 
     output signed [47:0] c4_out, c5_out, c6_out;
     output signed [47:0] c7_out, c8_out, c9_out;
-    output done_input_buffer, done_mac, done_q, done_relu;
+    output done_input_buffer, done_mac, done_q, done_relu, done_ofm;
 
     wire signed [23:0] a1, a2, a3;
     wire signed [23:0] b1, b2, b3;
@@ -28,6 +28,10 @@ module NPU (clk, reset, start,
     wire signed [47:0] relu1_mac, relu2_mac, relu3_mac;
     wire signed [47:0] relu4_mac, relu5_mac, relu6_mac;
     wire signed [47:0] relu7_mac, relu8_mac, relu9_mac;
+
+    wire signed [47:0] output1_mac, output2_mac, output3_mac;
+    wire signed [47:0] output4_mac, output5_mac, output6_mac;
+    wire signed [47:0] output7_mac, output8_mac, output9_mac;
 
     systolic_input_top input_buffer (
         .clk(clk),
@@ -78,14 +82,27 @@ module NPU (clk, reset, start,
         .out_6(relu7_mac), .out_7(relu8_mac), .out_8(relu9_mac)
     );
 
-    assign c1_out = relu1_mac;
-    assign c2_out = relu2_mac;
-    assign c3_out = relu3_mac;
-    assign c4_out = relu4_mac;
-    assign c5_out = relu5_mac;
-    assign c6_out = relu6_mac;
-    assign c7_out = relu7_mac;
-    assign c8_out = relu8_mac;
-    assign c9_out = relu9_mac;
-    assign done = done_relu;
+    output_buffer_top outputfm (
+        .clk(clk),
+        .reset(reset),
+        .done_systolic(done_relu),
+        .c1_in(relu1_mac), .c2_in(relu2_mac), .c3_in(relu3_mac),
+        .c4_in(relu4_mac), .c5_in(relu5_mac), .c6_in(relu6_mac),
+        .c7_in(relu7_mac), .c8_in(relu8_mac), .c9_in(relu9_mac),
+        .c1_out(output1_mac), .c2_out(output2_mac), .c3_out(output3_mac),
+        .c4_out(output4_mac), .c5_out(output5_mac), .c6_out(output6_mac),
+        .c7_out(output7_mac), .c8_out(output8_mac), .c9_out(output9_mac),
+        .done(done_ofm)
+    );
+
+    assign c1_out = output1_mac;
+    assign c2_out = output2_mac;
+    assign c3_out = output3_mac;
+    assign c4_out = output4_mac;
+    assign c5_out = output5_mac;
+    assign c6_out = output6_mac;
+    assign c7_out = output7_mac;
+    assign c8_out = output8_mac;
+    assign c9_out = output9_mac;
+    assign done = done_ofm;
 endmodule
