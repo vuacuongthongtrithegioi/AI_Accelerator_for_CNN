@@ -8,16 +8,16 @@ module matrix_multiplication(
 );
 
     input wire clk, reset, clear;
-    input wire [23:0] a1, a2, a3;
-    input wire [23:0] b1, b2, b3;
-    output wire [47:0] c1, c2, c3;
-    output wire [47:0] c4, c5, c6;
-    output wire [47:0] c7, c8, c9;
+    input wire signed [23:0] a1, a2, a3;
+    input wire signed [23:0] b1, b2, b3;
+    output wire signed [47:0] c1, c2, c3;
+    output wire signed [47:0] c4, c5, c6;
+    output wire signed [47:0] c7, c8, c9;
 
-    wire [23:0] a12, a23, a45, a56, a78, a89;
-    wire [23:0] b14, b25, b36, b47, b58, b69;
+    wire signed [23:0] a12, a23, a45, a56, a78, a89;
+    wire signed [23:0] b14, b25, b36, b47, b58, b69;
 
-    wire [47:0] pe_c1, pe_c2, pe_c3, 
+    wire signed [47:0] pe_c1, pe_c2, pe_c3, 
                 pe_c4, pe_c5, pe_c6,
                 pe_c7, pe_c8, pe_c9;
 
