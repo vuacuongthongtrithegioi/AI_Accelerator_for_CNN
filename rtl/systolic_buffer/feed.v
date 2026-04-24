@@ -3,25 +3,25 @@ module systolic_input_buffer #(parameter DW=24)(
     input load,
     input [2:0] cycle,
 
-    input [DW-1:0] A00,A01,A02,
-    input [DW-1:0] A10,A11,A12,
-    input [DW-1:0] A20,A21,A22,
+    input signed [DW-1:0] A00,A01,A02,
+    input signed [DW-1:0] A10,A11,A12,
+    input signed [DW-1:0] A20,A21,A22,
 
-    input [DW-1:0] B00,B01,B02,
-    input [DW-1:0] B10,B11,B12,
-    input [DW-1:0] B20,B21,B22,
+    input signed [DW-1:0] B00,B01,B02,
+    input signed [DW-1:0] B10,B11,B12,
+    input signed [DW-1:0] B20,B21,B22,
 
-    output reg [DW-1:0] a1,a2,a3,
-    output reg [DW-1:0] b1,b2,b3
+    output reg signed [DW-1:0] a1,a2,a3,
+    output reg signed [DW-1:0] b1,b2,b3
 );
 
-    reg [DW-1:0] rA00,rA01,rA02;
-    reg [DW-1:0] rA10,rA11,rA12;
-    reg [DW-1:0] rA20,rA21,rA22;
+    reg signed [DW-1:0] rA00,rA01,rA02;
+    reg signed [DW-1:0] rA10,rA11,rA12;
+    reg signed [DW-1:0] rA20,rA21,rA22;
 
-    reg [DW-1:0] rB00,rB01,rB02;
-    reg [DW-1:0] rB10,rB11,rB12;
-    reg [DW-1:0] rB20,rB21,rB22;
+    reg signed [DW-1:0] rB00,rB01,rB02;
+    reg signed [DW-1:0] rB10,rB11,rB12;
+    reg signed [DW-1:0] rB20,rB21,rB22;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -78,11 +78,6 @@ module systolic_input_buffer #(parameter DW=24)(
             end
 
             3'd7: begin
-                a1 = 0; a2 = 0; a3 = 0;
-                b1 = 0; b2 = 0; b3 = 0;
-            end
-
-            3'd8: begin
                 a1 = 0; a2 = 0; a3 = 0;
                 b1 = 0; b2 = 0; b3 = 0;
             end
