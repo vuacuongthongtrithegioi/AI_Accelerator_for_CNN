@@ -782,4 +782,15 @@ module NPU (
         .c4_out(OFM_BUF_4), .c5_out(OFM_BUF_5), .c6_out(OFM_BUF_6),
         .c7_out(OFM_BUF_7), .c8_out(OFM_BUF_8), .c9_out(OFM_BUF_9)
     );
+
+    assign OFM_1 = OFM_BUF_1;
+    assign OFM_2 = OFM_BUF_2;
+    assign OFM_3 = OFM_BUF_3;
+    assign OFM_4 = OFM_BUF_4;
+    assign OFM_5 = OFM_BUF_5;
+    assign OFM_6 = OFM_BUF_6;
+    assign OFM_7 = OFM_BUF_7;
+    assign OFM_8 = OFM_BUF_8;
+    assign OFM_9 = OFM_BUF_9;
+    assign done = done_output_buffer;
 endmodule
