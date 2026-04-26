@@ -3,8 +3,8 @@ module Q16_32_to_Q8_16_pipe (
     input  wire reset,
     input  wire enable,
 
-    input  wire signed [47:0] din_0, din_1, din_2, din_3, din_4, din_5, din_6, din_7, din_8;
-    output reg  signed [23:0] dout_0, dout_1, dout_2, dout_3, dout_4, dout_5, dout_6, dout_7, dout_8;
+  input  wire signed [47:0] din_0, din_1, din_2, din_3, din_4, din_5, din_6, din_7, din_8,
+    output reg  signed [23:0] dout_0, dout_1, dout_2, dout_3, dout_4, dout_5, dout_6, dout_7, dout_8,
     output reg done
 );
 

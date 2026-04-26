@@ -7,12 +7,15 @@ module ReLU (
 
     output signed [47:0] out_0, out_1, out_2,
     output signed [47:0] out_3, out_4, out_5,
-    output signed [47:0] out_6, out_7, out_8
+    output signed [47:0] out_6, out_7, out_8,
+
+    output reg done
 );
 
     reg signed [47:0] out_0_reg, out_1_reg, out_2_reg;
     reg signed [47:0] out_3_reg, out_4_reg, out_5_reg;
     reg signed [47:0] out_6_reg, out_7_reg, out_8_reg;
+    reg relu_en_d;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -35,6 +38,16 @@ module ReLU (
         end
     end
 
+    always @(posedge clk) begin
+        if (reset) begin
+            relu_en_d <= 0;
+            done <= 0;
+        end else begin
+            relu_en_d <= relu_en;
+            done <= relu_en_d; 
+        end
+    end
+
     assign out_0 = out_0_reg;
     assign out_1 = out_1_reg;
     assign out_2 = out_2_reg;
@@ -46,5 +59,3 @@ module ReLU (
     assign out_8 = out_8_reg;
 
 endmodule
-
- 
