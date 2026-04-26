@@ -2,18 +2,19 @@ module output_buffer_top (
     input clk, reset,
     input done_systolic,
 
-    input [47:0] c1_in, c2_in, c3_in,
-    input [47:0] c4_in, c5_in, c6_in,
-    input [47:0] c7_in, c8_in, c9_in,
+    input signed [47:0] c1_in, c2_in, c3_in,
+    input signed [47:0] c4_in, c5_in, c6_in,
+    input signed [47:0] c7_in, c8_in, c9_in,
 
-    output [47:0] c1_out, c2_out, c3_out,
-    output [47:0] c4_out, c5_out, c6_out,
-    output [47:0] c7_out, c8_out, c9_out,
-    
-    output done;
+    output signed [47:0] c1_out, c2_out, c3_out,
+    output signed [47:0] c4_out, c5_out, c6_out,
+    output signed [47:0] c7_out, c8_out, c9_out,
+
+    output reg done
 );
 
     wire load;
+    reg load_d;
 
     output_buffer_ctl out_ctl (
         .clk(clk), 
@@ -32,14 +33,13 @@ module output_buffer_top (
         .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out)
     );
 
-    reg done_d;
-
-    always @(posedge clk or posedge reset) begin
-        if (reset)
-            done_d <= 0;
-        else
-            done_d <= done_systolic;
-    end
-    assign done = done_d;
-
+    always @(posedge clk) begin
+        if (reset) begin
+            load_d <= 0;
+            done <= 0;
+        end else begin
+            load_d <= load;
+            done <= load_d;   
+        end
+    end 
 endmodule
