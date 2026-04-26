@@ -9,16 +9,16 @@ module buffer_out (
 );
     input clk, reset;
     input load;
-    input [47:0] c1_in, c2_in, c3_in;
-    input [47:0] c4_in, c5_in, c6_in;
-    input [47:0] c7_in, c8_in, c9_in;
-    output [47:0] c1_out, c2_out, c3_out;
-    output [47:0] c4_out, c5_out, c6_out;
-    output [47:0] c7_out, c8_out, c9_out;
+    input signed [47:0] c1_in, c2_in, c3_in;
+    input signed [47:0] c4_in, c5_in, c6_in;
+    input signed [47:0] c7_in, c8_in, c9_in;
+    output signed [47:0] c1_out, c2_out, c3_out;
+    output signed [47:0] c4_out, c5_out, c6_out;
+    output signed [47:0] c7_out, c8_out, c9_out;
 
-    reg [47:0] rC1, rC2, rC3;
-    reg [47:0] rC4, rC5, rC6;
-    reg [47:0] rC7, rC8, rC9;
+    reg signed [47:0] rC1, rC2, rC3;
+    reg signed [47:0] rC4, rC5, rC6;
+    reg signed [47:0] rC7, rC8, rC9;
 
     always @(posedge clk) begin
         if (reset) begin
