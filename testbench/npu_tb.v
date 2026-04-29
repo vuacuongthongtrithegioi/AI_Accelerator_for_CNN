@@ -2,10 +2,10 @@ module tb ();
     reg clk, reset, start;
     reg [215:0] IFM, WGT;
     wire done;
-    wire done_input_buffer, done_mac;
-    wire signed [47:0] c1_out, c2_out, c3_out;
-    wire signed [47:0] c4_out, c5_out, c6_out; 
-    wire signed [47:0] c7_out, c8_out, c9_out;
+    wire done_input_buffer, done_mac, done_q, done_relu, done_ofm;
+    wire signed [23:0] c1_out, c2_out, c3_out;
+    wire signed [23:0] c4_out, c5_out, c6_out; 
+    wire signed [23:0] c7_out, c8_out, c9_out;
 
     NPU npu (
         .clk(clk),
@@ -18,7 +18,10 @@ module tb ();
         .c4_out(c4_out), .c5_out(c5_out), .c6_out(c6_out),
         .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out),
         .done_input_buffer(done_input_buffer),
-        .done_mac(done_mac)
+        .done_mac(done_mac),
+        .done_q(done_q),
+        .done_relu(done_relu),
+        .done_ofm(done_ofm)
     );
 
     always #5 clk = ~clk;
