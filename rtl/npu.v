@@ -3,7 +3,8 @@ module NPU (clk, reset, start,
     c1_out, c2_out, c3_out, 
     c4_out, c5_out, c6_out, 
     c7_out, c8_out, c9_out, 
-    done_input_buffer, done_mac, done_q, done_relu, done_ofm);
+    done_input_buffer, done_mac, done_q, done_relu, done_ofm
+);
 
     input clk, reset, start;
     input [215:0] IFM;
