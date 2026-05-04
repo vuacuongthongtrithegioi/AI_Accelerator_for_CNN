@@ -1,4 +1,126 @@
-//Input Buffer for Systolic Array
+// Input buffer
+module input_buffer_block (
+    input clk, reset,
+    input write_en,
+    input read_en,
+
+    input  signed [215:0] data_in,   
+    output reg signed [215:0] data_out
+);
+
+    reg signed [215:0] buffer;
+
+    always @(posedge clk) begin
+        if (reset)
+            buffer <= 0;
+        else if (write_en)
+            buffer <= data_in;
+    end
+
+    always @(posedge clk) begin
+        if (reset)
+            data_out <= 0;
+        else if (read_en)
+            data_out <= buffer;
+    end
+
+endmodule
+
+module input_buffer_block_ctrl (
+    input clk, reset,
+    input start,
+
+    output reg write_en,
+    output reg read_en,
+    output reg done
+);
+
+    reg [1:0] state;
+
+    localparam IDLE  = 2'd0,
+               WRITE = 2'd1,
+               READ  = 2'd2,
+               DONE  = 2'd3;
+
+    always @(posedge clk) begin
+        if (reset)
+            state <= IDLE;
+        else begin
+            case (state)
+
+                IDLE:
+                    if (start) state <= WRITE;
+
+                WRITE:
+                    state <= READ;
+
+                READ:
+                    state <= DONE;
+
+                DONE:
+                    state <= IDLE;
+
+            endcase
+        end
+    end
+
+    always @(*) begin
+        write_en = 0;
+        read_en  = 0;
+        done     = 0;
+
+        case (state)
+            WRITE: write_en = 1;
+            READ:  read_en  = 1;
+            DONE:  done     = 1;
+        endcase
+    end
+
+endmodule
+
+module input_buffer_block_top (
+    input clk, reset, start,
+
+    input  signed [215:0] IFM_in,
+    input  signed [215:0] WGT_in,
+
+    output signed [215:0] IFM_out,
+    output signed [215:0] WGT_out,
+
+    output done
+);
+
+    wire write_en, read_en;
+
+    input_buffer_block_ctrl ctrl (
+        .clk(clk),
+        .reset(reset),
+        .start(start),
+        .write_en(write_en),
+        .read_en(read_en),
+        .done(done)
+    );
+
+    input_buffer_block ifm_buf (
+        .clk(clk),
+        .reset(reset),
+        .write_en(write_en),
+        .read_en(read_en),
+        .data_in(IFM_in),
+        .data_out(IFM_out)
+    );
+
+    input_buffer_block wgt_buf (
+        .clk(clk),
+        .reset(reset),
+        .write_en(write_en),
+        .read_en(read_en),
+        .data_in(WGT_in),
+        .data_out(WGT_out)
+    );
+
+endmodule
+
 module systolic_input_buffer #(parameter DW=24)(
     input clk, reset,
     input load,
@@ -219,7 +341,6 @@ module systolic_input_top #(parameter DW=24)(
 
 endmodule
 
-//MAC Unit for Systolic Array
 module pe(
     clk, reset, clear,
     in_a, in_b,
@@ -421,367 +542,76 @@ module mac_top #(parameter DW=24)(
 
 endmodule
 
-module Q16_32_to_Q8_16_pipe (
-    input  wire clk,
-    input  wire reset,
-    input  wire enable,
-
-  input  wire signed [47:0] din_0, din_1, din_2, din_3, din_4, din_5, din_6, din_7, din_8,
-    output reg  signed [23:0] dout_0, dout_1, dout_2, dout_3, dout_4, dout_5, dout_6, dout_7, dout_8,
-    output reg done
+module NPU (
+    clk, reset, start,
+    IFM_in, WGT_in,
+    done_input_buffer, done_systolic_input, done_mac,
+    cout_1, cout_2, cout_3,
+    cout_4, cout_5, cout_6,
+    cout_7, cout_8, cout_9,
+    done_npu
 );
-
-    reg signed [47:0] stage_0, stage_1, stage_2, stage_3, stage_4, stage_5, stage_6, stage_7, stage_8;
-    reg valid1;
-
-    always @(posedge clk) begin
-        if (reset) begin
-            valid1 <= 0;
-        end else begin
-            valid1 <= enable;
-            if (enable)
-                stage_0 <= din_0 + 48'sd32768;
-                stage_1 <= din_1 + 48'sd32768;
-                stage_2 <= din_2 + 48'sd32768;
-                stage_3 <= din_3 + 48'sd32768;
-                stage_4 <= din_4 + 48'sd32768;
-                stage_5 <= din_5 + 48'sd32768;
-                stage_6 <= din_6 + 48'sd32768;
-                stage_7 <= din_7 + 48'sd32768;
-                stage_8 <= din_8 + 48'sd32768;
-        end
-    end
-
-    always @(posedge clk) begin
-        if (reset) begin
-            dout_0 <= 0; dout_1 <= 0; dout_2 <= 0;
-            dout_3 <= 0; dout_4 <= 0; dout_5 <= 0;
-            dout_6 <= 0; dout_7 <= 0; dout_8 <= 0;
-            done <= 0;
-        end else begin
-            done <= valid1;
-
-            if (valid1) begin
-                if (stage_0[47:39] != {9{stage_0[47]}})
-                    dout_0 <= (stage_0[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_0 <= stage_0[39:16];
-                if (stage_1[47:39] != {9{stage_1[47]}})
-                    dout_1 <= (stage_1[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_1 <= stage_1[39:16];
-                if (stage_2[47:39] != {9{stage_2[47]}})
-                    dout_2 <= (stage_2[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_2 <= stage_2[39:16];
-                if (stage_3[47:39] != {9{stage_3[47]}})
-                    dout_3 <= (stage_3[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_3 <= stage_3[39:16];
-                if (stage_4[47:39] != {9{stage_4[47]}})
-                    dout_4 <= (stage_4[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_4 <= stage_4[39:16];
-                if (stage_5[47:39] != {9{stage_5[47]}})
-                    dout_5 <= (stage_5[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_5 <= stage_5[39:16];
-                if (stage_6[47:39] != {9{stage_6[47]}})
-                    dout_6 <= (stage_6[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_6 <= stage_6[39:16];
-                if (stage_7[47:39] != {9{stage_7[47]}})
-                    dout_7 <= (stage_7[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_7 <= stage_7[39:16];
-                if (stage_8[47:39] != {9{stage_8[47]}})
-                    dout_8 <= (stage_8[47]) ? -24'sh800000 : 24'sh7FFFFF;
-                else
-                    dout_8 <= stage_8[39:16];
-            end
-        end
-    end
-
-
-endmodule
-
-module ReLU (
-    input clk, reset, relu_en,
-
-    input signed [47:0] in_0, in_1, in_2,
-    input signed [47:0] in_3, in_4, in_5,
-    input signed [47:0] in_6, in_7, in_8,
-
-    output signed [47:0] out_0, out_1, out_2,
-    output signed [47:0] out_3, out_4, out_5,
-    output signed [47:0] out_6, out_7, out_8,
-
-    output reg done
-);
-
-    reg signed [47:0] out_0_reg, out_1_reg, out_2_reg;
-    reg signed [47:0] out_3_reg, out_4_reg, out_5_reg;
-    reg signed [47:0] out_6_reg, out_7_reg, out_8_reg;
-    reg relu_en_d;
-
-    always @(posedge clk) begin
-        if (reset) begin
-            out_0_reg <= 0; out_1_reg <= 0; out_2_reg <= 0;
-            out_3_reg <= 0; out_4_reg <= 0; out_5_reg <= 0;
-            out_6_reg <= 0; out_7_reg <= 0; out_8_reg <= 0;
-        end
-        else if (relu_en) begin
-            out_0_reg <= (in_0 < 0) ? 0 : in_0;
-            out_1_reg <= (in_1 < 0) ? 0 : in_1;
-            out_2_reg <= (in_2 < 0) ? 0 : in_2;
-
-            out_3_reg <= (in_3 < 0) ? 0 : in_3;
-            out_4_reg <= (in_4 < 0) ? 0 : in_4;
-            out_5_reg <= (in_5 < 0) ? 0 : in_5;
-
-            out_6_reg <= (in_6 < 0) ? 0 : in_6;
-            out_7_reg <= (in_7 < 0) ? 0 : in_7;
-            out_8_reg <= (in_8 < 0) ? 0 : in_8;
-        end
-    end
-
-    always @(posedge clk) begin
-        if (reset) begin
-            relu_en_d <= 0;
-            done <= 0;
-        end else begin
-            relu_en_d <= relu_en;
-            done <= relu_en_d; 
-        end
-    end
-
-    assign out_0 = out_0_reg;
-    assign out_1 = out_1_reg;
-    assign out_2 = out_2_reg;
-    assign out_3 = out_3_reg;
-    assign out_4 = out_4_reg;
-    assign out_5 = out_5_reg;
-    assign out_6 = out_6_reg;
-    assign out_7 = out_7_reg;
-    assign out_8 = out_8_reg;
-
-endmodule
-
-module buffer_out (
-    clk, reset, load,
-    c1_in, c2_in, c3_in, 
-    c4_in, c5_in, c6_in, 
-    c7_in, c8_in, c9_in, 
-    c1_out, c2_out, c3_out,
-    c4_out, c5_out, c6_out,
-    c7_out, c8_out, c9_out
-);
-    input clk, reset;
-    input load;
-    input signed [47:0] c1_in, c2_in, c3_in;
-    input signed [47:0] c4_in, c5_in, c6_in;
-    input signed [47:0] c7_in, c8_in, c9_in;
-    output signed [47:0] c1_out, c2_out, c3_out;
-    output signed [47:0] c4_out, c5_out, c6_out;
-    output signed [47:0] c7_out, c8_out, c9_out;
-
-    reg signed [47:0] rC1, rC2, rC3;
-    reg signed [47:0] rC4, rC5, rC6;
-    reg signed [47:0] rC7, rC8, rC9;
-
-    always @(posedge clk) begin
-        if (reset) begin
-            rC1<=0; rC2<=0; rC3<=0;
-            rC4<=0; rC5<=0; rC6<=0;
-            rC7<=0; rC8<=0; rC9<=0;
-        end
-        else if (load) begin
-            rC1<=c1_in; rC2<=c2_in; rC3<=c3_in;
-            rC4<=c4_in; rC5<=c5_in; rC6<=c6_in;
-            rC7<=c7_in; rC8<=c8_in; rC9<=c9_in;
-        end
-    end
-
-    assign c1_out = rC1;
-    assign c2_out = rC2;
-    assign c3_out = rC3;
-    assign c4_out = rC4;
-    assign c5_out = rC5;
-    assign c6_out = rC6;
-    assign c7_out = rC7;
-    assign c8_out = rC8;
-    assign c9_out = rC9;
-
-endmodule
-
-module output_buffer_ctl (clk, reset, done_sytolic, load);
-    input clk, reset, done_sytolic;
-    output reg load;
-
-    always @(posedge clk) begin
-        if (reset) begin
-            load <= 0;
-        end
-        else if (done_sytolic) begin
-            load <= 1;
-        end
-        else begin
-            load <= 0;
-        end
-    end
-endmodule
-
-module output_buffer_top (
-    input clk, reset,
-    input done_systolic,
-
-    input signed [47:0] c1_in, c2_in, c3_in,
-    input signed [47:0] c4_in, c5_in, c6_in,
-    input signed [47:0] c7_in, c8_in, c9_in,
-
-    output signed [47:0] c1_out, c2_out, c3_out,
-    output signed [47:0] c4_out, c5_out, c6_out,
-    output signed [47:0] c7_out, c8_out, c9_out,
-
-    output reg done
-);
-
-    wire load;
-    reg load_d;
-
-    output_buffer_ctl out_ctl (
-        .clk(clk), 
-        .reset(reset),
-        .done_sytolic(done_systolic),
-        .load(load)
-    );
-
-    buffer_out u_buffer_out (
-        .clk(clk), .reset(reset), .load(load),
-        .c1_in(c1_in), .c2_in(c2_in), .c3_in(c3_in),
-        .c4_in(c4_in), .c5_in(c5_in), .c6_in(c6_in),
-        .c7_in(c7_in), .c8_in(c8_in), .c9_in(c9_in),
-        .c1_out(c1_out), .c2_out(c2_out), .c3_out(c3_out),
-        .c4_out(c4_out), .c5_out(c5_out), .c6_out(c6_out),
-        .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out)
-    );
-
-    always @(posedge clk) begin
-        if (reset) begin
-            load_d <= 0;
-            done <= 0;
-        end else begin
-            load_d <= load;
-            done <= load_d;   
-        end
-    end 
-endmodule
-
-module NPU (clk, reset, start, 
-    IFM, WGT, done, 
-    c1_out, c2_out, c3_out, 
-    c4_out, c5_out, c6_out, 
-    c7_out, c8_out, c9_out, 
-    done_input_buffer, done_mac, done_q, done_relu, done_ofm);
-
     input clk, reset, start;
-    input [215:0] IFM;
-    input [215:0] WGT;
-    output done;
-    output signed [47:0] c1_out, c2_out, c3_out; 
-    output signed [47:0] c4_out, c5_out, c6_out;
-    output signed [47:0] c7_out, c8_out, c9_out;
-    output done_input_buffer, done_mac, done_q, done_relu, done_ofm;
+    input signed [215:0] IFM_in, WGT_in;
+    output done_input_buffer, done_systolic_input, done_mac;
+    output signed [47:0] cout_1, cout_2, cout_3;
+    output signed [47:0] cout_4, cout_5, cout_6;
+    output signed [47:0] cout_7, cout_8, cout_9;
+    output done_npu;
 
-    wire signed [23:0] a1, a2, a3;
-    wire signed [23:0] b1, b2, b3;
+    // Wires to connect input buffer outputs to the rest of the NPU
+    wire [215:0] IFM_out, WGT_out;
 
-    wire signed [47:0] c1_mac, c2_mac, c3_mac;
-    wire signed [47:0] c4_mac, c5_mac, c6_mac;
-    wire signed [47:0] c7_mac, c8_mac, c9_mac;
-
-    wire signed [47:0] q1_mac, q2_mac, q3_mac;
-    wire signed [47:0] q4_mac, q5_mac, q6_mac;
-    wire signed [47:0] q7_mac, q8_mac, q9_mac;
-
-    wire signed [47:0] relu1_mac, relu2_mac, relu3_mac;
-    wire signed [47:0] relu4_mac, relu5_mac, relu6_mac;
-    wire signed [47:0] relu7_mac, relu8_mac, relu9_mac;
-
-    wire signed [47:0] output1_mac, output2_mac, output3_mac;
-    wire signed [47:0] output4_mac, output5_mac, output6_mac;
-    wire signed [47:0] output7_mac, output8_mac, output9_mac;
-
-    systolic_input_top input_buffer (
+    input_buffer_block_top input_buffer (
         .clk(clk),
         .reset(reset),
         .start(start),
-        .IFM(IFM),
-        .WGT(WGT),
-        .a1(a1), .a2(a2), .a3(a3),
-        .b1(b1), .b2(b2), .b3(b3),
+        .IFM_in(IFM_in),
+        .WGT_in(WGT_in),
+        .IFM_out(IFM_out), 
+        .WGT_out(WGT_out),
         .done(done_input_buffer)
     );
 
+    // The rest of the NPU would go here, using IFM_out and WGT_out as inputs
+    wire a1_w, a2_w, a3_w;
+    wire b1_w, b2_w, b3_w;
+    systolic_input_top systolic_input (
+        .clk(clk),
+        .reset(reset),
+        .start(done_input_buffer), // Start systolic input after input buffer is done
+        .IFM(IFM_out),
+        .WGT(WGT_out),
+        .a1(a1_w), .a2(a2_w), .a3(a3_w),
+        .b1(b1_w), .b2(b2_w), .b3(b3_w),
+        .done(done_systolic_input)
+    );
+
+    // Additional logic to connect the systolic input to the rest of the NPU would go here
+    wire c1_w, c2_w, c3_w, 
+        c4_w, c5_w, c6_w, 
+        c7_w, c8_w, c9_w;
     mac_top mac (
         .clk(clk),
         .reset(reset),
-        .start(start),
-        .a1(a1), .a2(a2), .a3(a3),
-        .b1(b1), .b2(b2), .b3(b3),
-        .c1(c1_mac), .c2(c2_mac), .c3(c3_mac),
-        .c4(c4_mac), .c5(c5_mac), .c6(c6_mac),
-        .c7(c7_mac), .c8(c8_mac), .c9(c9_mac),
-        .done(done_mac)
+        .start(done_input_buffer), // Start MAC after input buffer is done
+        .a1(a1_w), .a2(a2_w), .a3(a3_w),
+        .b1(b1_w), .b2(b2_w), .b3(b3_w),
+        .c1(c1_w), .c2(c2_w), .c3(c3_w),
+        .c4(c4_w), .c5(c5_w), .c6(c6_w),
+        .c7(c7_w), .c8(c8_w), .c9(c9_w),
+        .done(done_mac) 
     );
 
-    Q16_32_to_Q8_16_pipe cut_bit (
-        .clk(clk),
-        .reset(reset),
-        .enable(done_mac),
-        .din_0(c1_mac), .din_1(c2_mac), .din_2(c3_mac),
-        .din_3(c4_mac), .din_4(c5_mac), .din_5(c6_mac),
-        .din_6(c7_mac), .din_7(c8_mac), .din_8(c9_mac),
-        .dout_0(q1_mac), .dout_1(q2_mac), .dout_2(q3_mac),
-        .dout_3(q4_mac), .dout_4(q5_mac), .dout_5(q6_mac),
-        .dout_6(q7_mac), .dout_7(q8_mac), .dout_8(q9_mac),
-        .done(done_q)
-    );
-
-    ReLU relu (
-        .clk(clk),
-        .reset(reset),
-        .relu_en(done_q),
-        .done(done_relu),
-        .in_0(q1_mac), .in_1(q2_mac), .in_2(q3_mac),
-        .in_3(q4_mac), .in_4(q5_mac), .in_5(q6_mac),
-        .in_6(q7_mac), .in_7(q8_mac), .in_8(q9_mac),
-        .out_0(relu1_mac), .out_1(relu2_mac), .out_2(relu3_mac),
-        .out_3(relu4_mac), .out_4(relu5_mac), .out_5(relu6_mac),
-        .out_6(relu7_mac), .out_7(relu8_mac), .out_8(relu9_mac)
-    );
-
-    output_buffer_top outputfm (
-        .clk(clk),
-        .reset(reset),
-        .done_systolic(done_relu),
-        .c1_in(relu1_mac), .c2_in(relu2_mac), .c3_in(relu3_mac),
-        .c4_in(relu4_mac), .c5_in(relu5_mac), .c6_in(relu6_mac),
-        .c7_in(relu7_mac), .c8_in(relu8_mac), .c9_in(relu9_mac),
-        .c1_out(output1_mac), .c2_out(output2_mac), .c3_out(output3_mac),
-        .c4_out(output4_mac), .c5_out(output5_mac), .c6_out(output6_mac),
-        .c7_out(output7_mac), .c8_out(output8_mac), .c9_out(output9_mac),
-        .done(done_ofm)
-    );
-
-    assign c1_out = output1_mac;
-    assign c2_out = output2_mac;
-    assign c3_out = output3_mac;
-    assign c4_out = output4_mac;
-    assign c5_out = output5_mac;
-    assign c6_out = output6_mac;
-    assign c7_out = output7_mac;
-    assign c8_out = output8_mac;
-    assign c9_out = output9_mac;
-    assign done = done_ofm;
+    //Test outputs
+    assign cout_1 = c1_w;
+    assign cout_2 = c2_w;
+    assign cout_3 = c3_w;
+    assign cout_4 = c4_w;
+    assign cout_5 = c5_w;
+    assign cout_6 = c6_w;
+    assign cout_7 = c7_w;
+    assign cout_8 = c8_w;
+    assign cout_9 = c9_w;
+    assign done_npu = done_mac; // NPU is done when MAC is done
 endmodule

@@ -2,7 +2,7 @@ module tb ();
     reg clk, reset, start;
     reg [215:0] IFM, WGT;
     wire done;
-    wire done_input_buffer, done_mac, done_q, done_relu, done_ofm;
+    wire done_input_buffer, done_systolic_input, done_mac;
     wire signed [23:0] c1_out, c2_out, c3_out;
     wire signed [23:0] c4_out, c5_out, c6_out; 
     wire signed [23:0] c7_out, c8_out, c9_out;
@@ -11,17 +11,12 @@ module tb ();
         .clk(clk),
         .reset(reset),
         .start(start),
-        .IFM(IFM),
-        .WGT(WGT),
-        .done(done),
-        .c1_out(c1_out), .c2_out(c2_out), .c3_out(c3_out),
-        .c4_out(c4_out), .c5_out(c5_out), .c6_out(c6_out),
-        .c7_out(c7_out), .c8_out(c8_out), .c9_out(c9_out),
+        .IFM_in(IFM),
+        .WGT_in(WGT),
         .done_input_buffer(done_input_buffer),
+        .done_systolic_input(done_systolic_input),
         .done_mac(done_mac),
-        .done_q(done_q),
-        .done_relu(done_relu),
-        .done_ofm(done_ofm)
+        .done(done)
     );
 
     always #5 clk = ~clk;
