@@ -16,7 +16,7 @@ module Q16_32_to_Q8_16_pipe (
             valid1 <= 0;
         end else begin
             valid1 <= enable;
-            if (enable)
+            if (enable) begin
                 stage_0 <= din_0 + 48'sd32768;
                 stage_1 <= din_1 + 48'sd32768;
                 stage_2 <= din_2 + 48'sd32768;
@@ -26,6 +26,7 @@ module Q16_32_to_Q8_16_pipe (
                 stage_6 <= din_6 + 48'sd32768;
                 stage_7 <= din_7 + 48'sd32768;
                 stage_8 <= din_8 + 48'sd32768;
+            end
         end
     end
 
