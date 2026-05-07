@@ -574,8 +574,8 @@ module NPU (
     );
 
     // The rest of the NPU would go here, using IFM_out and WGT_out as inputs
-    wire a1_w, a2_w, a3_w;
-    wire b1_w, b2_w, b3_w;
+    wire [23:0] a1_w, a2_w, a3_w;
+    wire [23:0] b1_w, b2_w, b3_w;
     systolic_input_top systolic_input (
         .clk(clk),
         .reset(reset),
@@ -588,7 +588,7 @@ module NPU (
     );
 
     // Additional logic to connect the systolic input to the rest of the NPU would go here
-    wire c1_w, c2_w, c3_w, 
+    wire [47:0] c1_w, c2_w, c3_w, 
         c4_w, c5_w, c6_w, 
         c7_w, c8_w, c9_w;
     mac_top mac (
