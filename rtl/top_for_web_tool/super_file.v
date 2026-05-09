@@ -542,6 +542,50 @@ module mac_top #(parameter DW=24)(
 
 endmodule
 
+module mac_reg (
+
+    input clk,
+    input reset,
+    input valid_in,
+    input signed [47:0] p1_in, p2_in, p3_in,
+    input signed [47:0] p4_in, p5_in, p6_in,
+    input signed [47:0] p7_in, p8_in, p9_in,
+
+    output reg signed [47:0] p1_out, p2_out, p3_out,
+    output reg signed [47:0] p4_out, p5_out, p6_out,
+    output reg signed [47:0] p7_out, p8_out, p9_out,
+
+    output reg valid_out
+);
+
+    always @(posedge clk or posedge reset) begin
+
+        if(reset) begin
+
+            p1_out <= 0; p2_out <= 0; p3_out <= 0;
+            p4_out <= 0; p5_out <= 0; p6_out <= 0;
+            p7_out <= 0; p8_out <= 0; p9_out <= 0;
+
+            valid_out <= 0;
+
+        end
+        else begin
+            valid_out <= valid_in;
+            if(valid_in) begin
+                p1_out <= p1_in;
+                p2_out <= p2_in;
+                p3_out <= p3_in;
+                p4_out <= p4_in;
+                p5_out <= p5_in;
+                p6_out <= p6_in;
+                p7_out <= p7_in;
+                p8_out <= p8_in;
+                p9_out <= p9_in;
+            end
+        end
+    end
+endmodule
+
 module NPU (
     clk, reset, start,
     IFM_in, WGT_in,
@@ -603,15 +647,22 @@ module NPU (
         .done(done_mac) 
     );
 
-    //Test outputs
-    assign cout_1 = c1_w;
-    assign cout_2 = c2_w;
-    assign cout_3 = c3_w;
-    assign cout_4 = c4_w;
-    assign cout_5 = c5_w;
-    assign cout_6 = c6_w;
-    assign cout_7 = c7_w;
-    assign cout_8 = c8_w;
-    assign cout_9 = c9_w;
-    assign done_npu = done_mac; // NPU is done when MAC is done
+    wire signed [47:0] pipe1, pipe2, pipe3;
+    wire signed [47:0] pipe4, pipe5, pipe6;
+    wire signed [47:0] pipe7, pipe8, pipe9;
+    // The mac_reg module would be defined elsewhere and would register the outputs of the MAC when done_mac is high
+    wire pipe_valid;
+
+    mac_reg reg_mac (
+        .clk(clk),
+        .reset(reset),
+        .valid_in(done_mac), // Register outputs when MAC is done
+        .p1_in(c1_w), .p2_in(c2_w), .p3_in(c3_w),
+        .p4_in(c4_w), .p5_in(c5_w), .p6_in(c6_w),
+        .p7_in(c7_w), .p8_in(c8_w), .p9_in(c9_w),
+        .p1_out(pipe1), .p2_out(pipe2), .p3_out(pipe3),
+        .p4_out(pipe4), .p5_out(pipe5), .p6_out(pipe6),
+        .p7_out(pipe7), .p8_out(pipe8), .p9_out(pipe9),
+        .valid_out(pipe_valid)
+    );
 endmodule

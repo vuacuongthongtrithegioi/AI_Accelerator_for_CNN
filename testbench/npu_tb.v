@@ -16,7 +16,7 @@ module tb ();
         .done_input_buffer(done_input_buffer),
         .done_systolic_input(done_systolic_input),
         .done_mac(done_mac),
-        .done(done)
+        .done_npu(done)
     );
 
     always #5 clk = ~clk;

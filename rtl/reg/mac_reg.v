@@ -3,13 +3,13 @@ module mac_reg (
     input clk,
     input reset,
     input valid_in,
-    input signed [47:0] p1_in, p2_in, p3_in;
-    input signed [47:0] p4_in, p5_in, p6_in;
-    input signed [47:0] p7_in, p8_in, p9_in;
+    input signed [47:0] p1_in, p2_in, p3_in,
+    input signed [47:0] p4_in, p5_in, p6_in,
+    input signed [47:0] p7_in, p8_in, p9_in,
 
-    output reg signed [47:0] p1_out, p2_out, p3_out;
-    output reg signed [47:0] p4_out, p5_out, p6_out;
-    output reg signed [47:0] p7_out, p8_out, p9_out;
+    output reg signed [47:0] p1_out, p2_out, p3_out,
+    output reg signed [47:0] p4_out, p5_out, p6_out,
+    output reg signed [47:0] p7_out, p8_out, p9_out,
 
     output reg valid_out
 );
