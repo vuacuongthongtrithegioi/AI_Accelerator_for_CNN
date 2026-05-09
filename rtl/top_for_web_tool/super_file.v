@@ -857,7 +857,7 @@ module NPU (
     input clk, reset, start;
     input signed [215:0] IFM_in, WGT_in;
     output done_input_buffer, done_systolic_input, done_mac;
-    output done_cut_bit, done_relu;
+    output done_cut_bit, done_relu, done_output_buffer;
     output signed [47:0] cout_1, cout_2, cout_3;
     output signed [47:0] cout_4, cout_5, cout_6;
     output signed [47:0] cout_7, cout_8, cout_9;
@@ -963,11 +963,13 @@ module NPU (
     output_buffer_top output_buffer (
         .clk(clk),
         .reset(reset),
-        .start(done_relu), // Start output buffer after ReLU is done
-        .data_in({r1_w, r2_w, r3_w, r4_w, r5_w, r6_w, r7_w, r8_w, r9_w}), // Concatenate ReLU outputs into a single bus
-        .cout_1(cout_1), .cout_2(cout_2), .cout_3(cout_3),
-        .cout_4(cout_4), .cout_5(cout_5), .cout_6(cout_6),
-        .cout_7(cout_7), .cout_8(cout_8), .cout_9(cout_9),
+        .done_systolic(done_relu), // Start output buffer after ReLU is done
+        .c1_in(r1_w), .c2_in(r2_w), .c3_in(r3_w),
+        .c4_in(r4_w), .c5_in(r5_w), .c6_in(r6_w),
+        .c7_in(r7_w), .c8_in(r8_w), .c9_in(r9_w),
+        .c1_out(cout_1), .c2_out(cout_2), .c3_out(cout_3),
+        .c4_out(cout_4), .c5_out(cout_5), .c6_out(cout_6),
+        .c7_out(cout_7), .c8_out(cout_8), .c9_out(cout_9),
         .done(done_output_buffer) // NPU is done when output buffer is done
     );
 

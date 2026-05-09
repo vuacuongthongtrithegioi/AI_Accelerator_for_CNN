@@ -2,7 +2,8 @@ module tb ();
     reg clk, reset, start;
     reg [215:0] IFM, WGT;
     wire done;
-    wire done_input_buffer, done_systolic_input, done_mac;
+    wire done_input_buffer, done_mac;
+    wire done_cut_bit, done_relu, done_output_buffer;
     wire signed [23:0] c1_out, c2_out, c3_out;
     wire signed [23:0] c4_out, c5_out, c6_out; 
     wire signed [23:0] c7_out, c8_out, c9_out;
@@ -14,8 +15,13 @@ module tb ();
         .IFM_in(IFM),
         .WGT_in(WGT),
         .done_input_buffer(done_input_buffer),
-        .done_systolic_input(done_systolic_input),
         .done_mac(done_mac),
+        .done_cut_bit(done_cut_bit),
+        .done_relu(done_relu),
+        .done_output_buffer(done_output_buffer),
+        .cout_1(c1_out), .cout_2(c2_out), .cout_3(c3_out),
+        .cout_4(c4_out), .cout_5(c5_out), .cout_6(c6_out),
+        .cout_7(c7_out), .cout_8(c8_out), .cout_9(c9_out),
         .done_npu(done)
     );
 
